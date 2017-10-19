@@ -37,7 +37,12 @@ def str_to_heure(s):
         datetime.time: une heure du module datetime ou None.
     """
     # TODO: À compléter
-
+    if s == '' or s.isspace():
+        return None
+    parties = s.split(':')
+    heure = int(parties[0])
+    minuttes = int(parties[1])
+    return datetime.time(heure,minuttes)
 
 def creer_agenda(nom_proprietaire):
     """
@@ -54,6 +59,7 @@ def creer_agenda(nom_proprietaire):
         dict: Dictionnaire qui représente l'agenda.
     """
     # TODO: À compléter
+
 
 
 def creer_evenement(identifiant, date, heure_debut, heure_fin, titre, lieu=None):
