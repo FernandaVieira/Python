@@ -44,6 +44,7 @@ def str_to_heure(s):
     minuttes = int(parties[1])
     return datetime.time(heure,minuttes)
 
+
 def creer_agenda(nom_proprietaire):
     """
     Étant donné un nom de propriétaire, elle crée un nouvel agenda.
@@ -59,7 +60,6 @@ def creer_agenda(nom_proprietaire):
         dict: Dictionnaire qui représente l'agenda.
     """
     # TODO: À compléter
-
 
 
 def creer_evenement(identifiant, date, heure_debut, heure_fin, titre, lieu=None):
