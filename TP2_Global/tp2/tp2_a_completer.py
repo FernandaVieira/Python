@@ -16,7 +16,7 @@ def str_to_date(s):
         datetime.date: Une date du module datetime.
     """
     if (s == '') or (s.isspace()):
-        return date_actuelle
+        return datetime.date.today()
 
     parties = s.split('-')
     annee = int(parties[0])
@@ -37,9 +37,9 @@ def str_to_heure(s):
     Returns:
         datetime.time: une heure du module datetime ou None.
     """
-    # TODO: À compléter
+
     if s == '' or s.isspace():
-        return None
+        return s == None
     parties = s.split(':')
     heure = int(parties[0])
     minuttes = int(parties[1])
@@ -62,8 +62,8 @@ def creer_agenda(nom_proprietaire):
     Returns:
         dict: Dictionnaire qui représente l'agenda.
     """
-
-    agenda = {'proprio': nom_proprietaire, 'evenements':'', 'max_id': 0}
+    liste = [] #liste vide
+    agenda = {'proprio': nom_proprietaire, 'max_id': 0, 'evenements': liste}  #dictionnaiore qui represente l'agenda
     return agenda
 
 def creer_evenement(identifiant, date, heure_debut, heure_fin, titre, lieu=None):
@@ -83,8 +83,10 @@ def creer_evenement(identifiant, date, heure_debut, heure_fin, titre, lieu=None)
     Returns:
         dict: Dictionnaire représentant un évènement.
     """
-
-    evenement = {'id': identifiant, 'date': date, 'heure_debut': heure_debut, 'heure_fin': heure_fin, 'titre': titre, 'lieu': lieu}
+    if lieu == None or lieu == '': #valeur donne car le lieu soit None or vide
+        lieu = 'Inconnu'
+    evenement = {'id': identifiant, 'date': date, 'heure_debut': heure_debut,
+                 'heure_fin': heure_fin, 'titre': titre, 'lieu': lieu} #informations de l'evenemet qui seront ajouté dans l'agenda['evenements'] aqui a ete crée
     return evenement
 
 def evenement_to_str(evt):
@@ -108,11 +110,12 @@ def evenement_to_str(evt):
         str: Chaîne de caractères dans le format ci-dessus représentant l'évènement passé en argument.
     """
 
-    event_id = 'ID:{} => {} \n '.format(evt['id'],evt['titre'])
-    time_et_date = '{} {} à {} \n'.format(evt['date'],evt['heure_debut'], evt['heure_fin'])
-    lieu = 'Lieu: {} \n'.format(evt['lieu'])
-
-    return event_id + time_et_date + lieu
+    event_id = 'ID:{} => {} \n'.format(evt['id'],evt['titre']) # formatation de la premiere ligne de l'evenement
+    time_et_date = '{} {} à {} \n'.format(evt['date'],evt['heure_debut'], evt['heure_fin']) # formatation de la 2 ligne de l'evenement
+    lieu = 'Lieu: {} \n'.format(evt['lieu']) # formatation de la 3 ligne de l'evenement
+    evenement = event_id + time_et_date + lieu #chaine de caractere qui represente l'evenement
+    print(type(evenement))
+    return str(evenement)
 
 def sauvegarder_agenda(agenda, fichier):
     """
@@ -139,12 +142,33 @@ def sauvegarder_agenda(agenda, fichier):
         agenda (dict): L'agenda à sauvegarder.
         fichier (str): Emplacement du fichier où l'agenda sera sauvegardé.
     """
-    # TODO: À compléter
+    if 'proprio' in agenda:
+        fichier +='\\' + agenda['proprio'] #sauvegarder l'agende avec le nom du proprietaire
+        print(agenda['proprio'])
+        print(fichier)
+        if '.txt' in fichier: #valider qui l'uitlisateur a bien mis l'extension du fichier pour sauvager sur le bom format
+            patch_fichier = open(fichier, 'w')
+        else:
+            patch_fichier = open(fichier + '.txt', 'w')
 
+
+    for i in agenda.keys(): # Recherche des valeurs existent sur l'agenda
+        print(i)
+        if 'proprio' in i: #valide cle proprio sur dict agenda
+            patch_fichier.write('{} \n'.format(agenda['proprio'])) #valeur pour cle proprio
+        elif 'max_id' in i: #valide cle max-id sur dict agenda
+            patch_fichier.write('{} \n'.format(agenda['max_id'])) #valeur cle max_id
+        elif 'evenements' in i: #valide cle evenements sur dict agenda
+            for j in agenda['evenements']: #recherche liste d'evenement
+                event = evenement_to_str(j) #formatation des evenements en bon format pour ecriture
+                patch_fichier.write('{}'.format(event))
+        else:
+            continue
+    print(agenda)
+    patch_fichier.close()
 
 def charger_agenda(fichier):
     """
-    Opération inverse de la fonction 'sauvegarder_agenda'.
     Elle permet étant donné l'emplacement d'un fichier contenant un agenda de charger en mémoire cet agenda.
 
     Args:
@@ -153,25 +177,57 @@ def charger_agenda(fichier):
     Returns:
         dict: Agenda contenu dans le fichier lu.
     """
-    # TODO:
+    # TODO: a completer
+    # event_id = 'ID:{} => {} \n'.format(evt['id'], evt['titre'])  # formatation de la premiere ligne de l'evenement
+    # time_et_date = '{} {} à {} \n'.format(evt['date'], evt['heure_debut'],
+    #                                       evt['heure_fin'])  # formatation de la 2 ligne de l'evenement
+    # lieu = 'Lieu: {} \n'.format(evt['lieu'])  # formatation de la 3 ligne de l'evenement
+    # evenement = event_id + time_et_date + lieu  # chaine de caractere qui represente l'evenement
 
     donne = {}
+
+    evenements = {}
     evenement = []
     ouverture = open(fichier, 'r')
-    qt_ligne = ouverture.readlines()
-    x=0
-    for ligne in qt_ligne:
-            if x == 0:
+    linges = ouverture.readlines()
+    x = 0
+    for ligne in linges:
+            linge = ligne.replace('\n','')
+            if x == 0 :
                 donne['proprio'] = ligne
+                creer_agenda(ligne)
             elif x == 1:
                 donne['max_id'] = ligne
+            elif 'ID' in ligne:
+                ligne = ligne.split()
+                id = ligne[0]
+                id = id.split(':')
+                event_id = id[1]
+                titre = ligne[2]
+                evenement.append(event_id)
+                evenement.append(titre)
+            elif 'Lieu:' in ligne:
+                ligne = ligne.split()
+                evenement.append(ligne[1])
+                # id = ligne[0]
+                # id = id.split(':')
+                # event_id = id[1]
+                # titre = ligne[2]
+                # evenement['id'] = event_id
+                # evenement['titre'] = titre
             else:
-                evenement.append(ligne)
+                ligne = ligne.split()
+                if (ligne != []):
+                    evenement.append(ligne[0])
+                    evenement.append(ligne[3])
             x += 1
-    donne['evenement'] = evenement
+
+
+    donne['evenements'] = evenement
+    print(donne)
     return donne
 
-
+# C:\Users\htaso\Desktop\GIT\Python\TP2_Global\tp2\test.txt
 def saisir_evenement():
     """
     Demande à l'utilisateur de rentrer les informations relatives à un évènement.
@@ -183,13 +239,14 @@ def saisir_evenement():
     Returns:
         tuple: Un tuple (date, debut, fin, titre, lieu), l'ordre est important.
     """
-    # TODO: À compléter
+    #informations qui seront demandé a l'utilisateur
     titre = input("Titre de l'evenement: ")
     date = str_to_date(input('Date au format AAAA-MM-JJ: '))
     debut = str_to_heure(input('Heure de debut au format HH:MM: '))
     fin = str_to_heure(input('Heure de din au format HH:MM: '))
     lieu = input('Lieu (Laissez vide au besoin): ')
-    info_saisi = (date, debut, fin, titre, lieu)
+
+    info_saisi = (date, debut, fin, titre, lieu) #information recu
     return info_saisi
 
 def evenements_en_conflit(evt1, evt2):
@@ -234,8 +291,10 @@ def evenements_en_conflit(evt1, evt2):
     Returns:
         bool: True si les deux évènements sont en conflit, False sinon.
     """
-    # TODO: À compléter
-    return True
+    if evt1['date'] ==  evt2['date']:
+        if evt1['heure_debut'] < evt2['heure_fin']:
+            return True
+    return False
 
 
 def ajouter_evenement(agenda, date, heure_debut, heure_fin, titre_evenement, lieu=None):
@@ -255,20 +314,24 @@ def ajouter_evenement(agenda, date, heure_debut, heure_fin, titre_evenement, lie
     Returns:
         bool: True si l'évènement créé a pu être ajouté à l'agenda, False sinon.
     """
-    # TODO: À compléter
 
 
-    if heure_debut != '' and heure_fin  != '':
+    if heure_debut != '' and heure_fin != '':
+        agenda['max_id'] += 1
         if date != '' or date.isspace():
-            agenda['date'] = date_actuelle
+            date = date_actuelle
         else:
-            agenda['date'] = str_to_date(date)
-        agenda['debut'] = str_to_heure(heure_debut)
-        agenda['fin'] = str_to_heure(heure_fin)
-        agenda['titre'] = titre_evenement
+            date = str_to_date(date)
+        id =  agenda['max_id']
+        debut = str_to_heure(heure_debut)
+        fin= str_to_heure(heure_fin)
+        titre = titre_evenement
         if lieu != '' or lieu != None:
-            agenda['lieu'] = lieu
-        print(agenda)
+            lieu_event = lieu
+        else:
+            lieu_event= 'Inconue'
+        list_event = creer_evenement(id,date,debut,fin,titre,lieu_event)
+        agenda['evenements'].append(list_event)
         return True
     else:
         return False
@@ -286,6 +349,10 @@ def supprimer_evenement(agenda, identifiant):
         bool: True si l'évènement est supprimé, False sinon.
     """
     # TODO: À compléter
+    for cle in agenda:
+        print(cle)
+        if cle['id'] == str(identifiant):
+            del cle
 
 
 def agenda_to_str(agenda, date_debut, date_fin):
@@ -309,7 +376,7 @@ def agenda_to_str(agenda, date_debut, date_fin):
     2017-10-12 16:00 à 18:30
     Lieu: Inconnu
 
-    ID:1 => Super Gala
+    ID:2 => Super Gala
     2017-10-12 14:00 à 20:00
     Lieu: Franconville Leredu
     ------------------------------------------------------------
@@ -430,5 +497,7 @@ def main():
         print()
 
 if __name__ == '__main__':
-   main()
-   charger_agenda('C:\\Users\\htaso\\Desktop\\Cours_Prog\\Git\\PythonExemples\\TP2_Global\\tp2\\agenda.txt')
+    main()
+   # evenement_to_str('1','lalala','2017-01-01','13:00','18:00','inconue')
+
+
